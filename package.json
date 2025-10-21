@@ -27,6 +27,7 @@
 		"vitest": "^3.2.4"
 	},
 	"dependencies": {
-		"redis": "^5.8.3"
+		"redis": "^5.8.3",
+		"showdown": "^2.1.0"
 	}
 }
