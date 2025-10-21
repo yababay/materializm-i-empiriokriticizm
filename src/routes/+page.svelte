@@ -2,12 +2,18 @@
 
     import Range from "$lib/components/custom/Range.svelte"
 
+    export let data: { sentences: string[] }
+
+    const { sentences } = data
+
 </script>
 
-<tr>
-    <td><Range min={0} max={5} name="range" /></td>
-    <td>Среди них выделялся самый высокий, долговязый, с весьма серьезным лицом и с тросточкой, увенчанной старинным автомобильным клаксоном с резиновой черной «грушей». Он невозмутимо шагал с дымящейся трубкой в зубах, в коротких штанах с пуговичками пониже колен, в серых шерстяных чулках, в черных ботинках. В клетчатом пиджаке. Шею подпирал белоснежный твердый воротничок с детским шелковым бантом. </td>
-</tr>
+{#each sentences as sentence, i}
+    <tr>
+        <td><Range min={0} max={5} name={'range_' + i} /></td>
+        <td>{sentence}</td>
+    </tr>
+{/each}
 
 <style lang="scss">
     tr {
