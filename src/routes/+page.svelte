@@ -8,10 +8,10 @@
     let article: HTMLDivElement
     let current: HTMLDivElement
     let owner: HTMLParagraphElement | undefined = undefined
-    let tags: Tags
+    let tagger: Tags
 
     onMount(() => {
-        document.addEventListener('selectionchange', () => {
+        document.addEventListener('selectionchange', async () => {
         const selection = window.getSelection();
             if(!(selection && selection.toString().length > 0)) return
             const text = selection.focusNode as Node
@@ -19,33 +19,37 @@
             if(!(current && parent)) return
             current.textContent = parent.textContent
             owner = parent
-            tags.reset()
+            tagger.reset()
+            const id = findParagraphId()
+            const tags = (await fetch(`/api/tags/${id}`).then(res => res.json())) as string[]
+            tagger.restore(tags)
         });
     })
 
-    const submit = async (e: SubmitEvent) => {
-        e.preventDefault()
-        tags.reset(owner ? owner : undefined)
-        if(!owner) return
+    const findParagraphId = () => {
         const paragraphs = document.querySelectorAll('article p') as NodeListOf<HTMLParagraphElement>
         let id = 2000001
         for(const paragraph of paragraphs) {
-            if(paragraph !== owner){ 
-                id++
-                continue
-            }
-            const content = owner.textContent.trim()
-            if(!content) break
-            const { dataset } = paragraph
-            if(!dataset) break
-            const { tags } = dataset
-            if(!(tags && tags.length)) break
-            const arr = JSON.parse(tags)
-            const body = JSON.stringify({id, tags: arr, content })
-            const res = await fetch('/api/paragraph', { method: 'post', headers: {'Content-Type': 'application/json'}, body })
-            if(res.status !== 200) throw 'bad status'
-            break
+            if(paragraph === owner) return id
         }
+        throw 'paragraph is not found'
+    }
+
+    const submit = async (e: SubmitEvent) => {
+        e.preventDefault()
+        tagger.reset(owner ? owner : undefined)
+        if(!owner) return
+        let id = findParagraphId()
+        const content = owner.textContent.trim()
+        if(!content) return
+        const { dataset } = owner
+        if(!dataset) return
+        const { tags } = dataset
+        if(!(tags && tags.length)) return
+        const arr = JSON.parse(tags)
+        const body = JSON.stringify({id, tags: arr, content })
+        const res = await fetch('/api/paragraph', { method: 'post', headers: {'Content-Type': 'application/json'}, body })
+        if(res.status !== 200) throw 'bad status'
         current.textContent = ''
         owner = undefined
     }
@@ -56,7 +60,7 @@
         <div class="col-6 d-flex flex-column align-items-center justify-content-center">
             <div class="alert alert-light ps-5" role="alert" bind:this={current}>
             </div>
-            <Tags url="/api/tags" bind:this={tags}/>
+            <Tags url="/api/tags" bind:this={tagger}/>
             <Submit />
         </div>
         <div class="col-6 pe-5" bind:this={article}>

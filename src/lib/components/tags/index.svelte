@@ -15,6 +15,10 @@
         if(autocomplete) autocomplete.setData(update)
         $reactiveTags = []
     }
+
+    export const restore = (tags: string[]) => {
+        $reactiveTags = tags
+    }
     
     const reactiveTags = writable(Array.isArray(tags) && tags.length && tags.sort() || [])
     const badgesHtml = derived(reactiveTags, (tags) => tags.map(tag => `<span style="cursor: pointer" class="badge text-bg-primary tag-badge">${tag}</span>`))
@@ -67,14 +71,14 @@
 
 <div class="d-flex flex-column justify-content-end wrapper align-items-center m-3">
 
-    <p bind:this={badges} class="text-end w-100"></p>
+    <p bind:this={badges} class="text-center w-100 ps-3 pe-3"></p>
     <input name="tags" type="hidden" bind:this={hidden}>
 
-    <div class="w-100">
+    <div class="w-50">
         <input
             data-server={url}
             type="text"
-            class="form-control w-50"
+            class="form-control w-100"
             placeholder="выберите или введите тэги"
             bind:this={input}
             on:keydown={tagUp}
@@ -86,5 +90,9 @@
     .wrapper {
         height: 80px;
         width: 80ch;
+    }
+
+    input::placeholder {
+        text-align: center;
     }
 </style>
