@@ -1,0 +1,10 @@
+$blockquote-color: #777;
+$blockquote-border-color: #bbb;
+
+article blockquote {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    border-left: 1rem $blockquote-border-color solid;
+    padding-left: 1rem;
+    color: $blockquote-color;
+}

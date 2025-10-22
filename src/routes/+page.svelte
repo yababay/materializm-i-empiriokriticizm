@@ -1,33 +1,72 @@
 <script lang="ts">
 
-    import Range from "$lib/components/custom/Range.svelte"
+    import Article from '$lib/components/custom/Article.svelte'
+    import Submit from '$lib/components/Submit.svelte'
+    import Tags from '$lib/components/tags/index.svelte'
+    import { onMount } from 'svelte';
 
-    export let data: { sentences: string[] }
+    let article: HTMLDivElement
+    let current: HTMLDivElement
+    let owner: HTMLParagraphElement | undefined = undefined
+    let tags: Tags
 
-    const { sentences } = data
+    onMount(() => {
+        document.addEventListener('selectionchange', () => {
+        const selection = window.getSelection();
+            if(!(selection && selection.toString().length > 0)) return
+            const text = selection.focusNode as Node
+            const parent = text.parentElement as HTMLParagraphElement
+            if(!(current && parent)) return
+            current.textContent = parent.textContent
+            owner = parent
+            tags.reset()
+        });
+    })
 
+    const submit = async (e: SubmitEvent) => {
+        e.preventDefault()
+        tags.reset(owner ? owner : undefined)
+        if(!owner) return
+        const paragraphs = document.querySelectorAll('article p') as NodeListOf<HTMLParagraphElement>
+        let id = 2000001
+        for(const paragraph of paragraphs) {
+            if(paragraph !== owner){ 
+                id++
+                continue
+            }
+            const content = owner.textContent.trim()
+            if(!content) break
+            const { dataset } = paragraph
+            if(!dataset) break
+            const { tags } = dataset
+            if(!(tags && tags.length)) break
+            const arr = JSON.parse(tags)
+            const body = JSON.stringify({id, tags: arr, content })
+            const res = await fetch('/api/paragraph', { method: 'post', headers: {'Content-Type': 'application/json'}, body })
+            if(res.status !== 200) throw 'bad status'
+            break
+        }
+        current.textContent = ''
+        owner = undefined
+    }
 </script>
 
-{#each sentences as sentence, i}
-    <tr>
-        <td><Range min={0} max={5} name={'range_' + i} /></td>
-        <td>{sentence}</td>
-    </tr>
-{/each}
+<form method="post" on:submit={submit}>
+    <div class="row h-100">
+        <div class="col-6 d-flex flex-column align-items-center justify-content-center">
+            <div class="alert alert-light ps-5" role="alert" bind:this={current}>
+            </div>
+            <Tags url="/api/tags" bind:this={tags}/>
+            <Submit />
+        </div>
+        <div class="col-6 pe-5" bind:this={article}>
+            <Article />
+        </div>
+    </div>
+</form>
 
 <style lang="scss">
-    tr {
-        width: 151ch;
-        td {
-            &:first-child {
-                width: 10ch;
-            };
-            &:last-child {
-                max-width: 140ch;
-                white-space: nowrap; /* Prevents text from wrapping to the next line */
-                overflow: hidden; /* Hides any overflowing content */
-                text-overflow: ellipsis; /* Displays an ellipsis to indicate truncated text */            
-            }
-        }
+    .alert {
+        width: 60ch;
     }
 </style>
