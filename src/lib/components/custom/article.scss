@@ -21,4 +21,25 @@ article {
     h3 {
         font-size: 1.2rem;
     }
+
+    p.current {
+        border-left: 2px black dotted;
+        padding-left: .7rem;
+        position: relative;
+
+        .badge {
+            background-color: #777; /* Example background color */
+            color: #fff; /* Text color */
+            padding: 0.2em 0.6em; /* Padding around the text */
+            border-radius: 0.25rem; /* Rounded corners */
+            font-size: 0.75em; /* Smaller font size */
+            vertical-align: middle; /* Align vertically with surrounding text */
+            margin-left: 0.5em; /* Space from the paragraph text */
+            display: inline-block; /* Allows padding and margin to work correctly */
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            //transform: translate(10%, -100%); 
+        }
+    }
 }

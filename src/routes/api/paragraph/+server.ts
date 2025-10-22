@@ -6,9 +6,10 @@ export const POST = async ({request}) => {
     const data = (await request.json()) as { id: number, content: string, tags: string[] }
     const { id, content, tags } = data
     let key = `materializm-i-empiriokriticizm:${id}:paragraph`
-    console.log(key)
+    //console.log(key, data)
     await client.set(key, content)
     key = key.replace(':paragraph', ':tags')
+    await client.del(key)
     await client.sAdd(key, tags)
     return new Response()
 }

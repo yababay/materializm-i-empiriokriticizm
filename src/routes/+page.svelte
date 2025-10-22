@@ -10,17 +10,18 @@
     let owner: HTMLParagraphElement | undefined = undefined
     let tagger: Tags
 
+    const ID_PREFIX = 2000000
+
     onMount(() => {
         document.addEventListener('selectionchange', async () => {
         const selection = window.getSelection();
             if(!(selection && selection.toString().length > 0)) return
             const text = selection.focusNode as Node
-            const parent = text.parentElement as HTMLParagraphElement
-            if(!(current && parent)) return
-            current.textContent = parent.textContent
-            owner = parent
-            tagger.reset()
+            owner = text.parentElement as HTMLParagraphElement
             const id = findParagraphId()
+            if(!(current && parent && id > 0)) return
+            current.textContent = owner.textContent.replace(/\d+$/, '')
+            tagger.reset()
             const tags = (await fetch(`/api/tags/${id}`).then(res => res.json())) as string[]
             tagger.restore(tags)
         });
@@ -28,11 +29,26 @@
 
     const findParagraphId = () => {
         const paragraphs = document.querySelectorAll('article p') as NodeListOf<HTMLParagraphElement>
-        let id = 2000001
-        for(const paragraph of paragraphs) {
-            if(paragraph === owner) return id
+        for(const paragraph of paragraphs){
+            const badge = paragraph.querySelector('.badge')
+            if(badge) paragraph.removeChild(badge)
+            paragraph.classList.remove('current')
         }
-        throw 'paragraph is not found'
+
+        let count = 1
+        for(const paragraph of paragraphs) {
+            if(paragraph !== owner){
+                count++
+                continue
+            }
+            paragraph.classList.add('current')
+            const badge = document.createElement('span')
+            badge.classList.add('badge')
+            badge.textContent = `${count}`
+            paragraph.appendChild(badge)
+            return count + ID_PREFIX
+        }
+        return -1
     }
 
     const submit = async (e: SubmitEvent) => {
@@ -40,7 +56,7 @@
         tagger.reset(owner ? owner : undefined)
         if(!owner) return
         let id = findParagraphId()
-        const content = owner.textContent.trim()
+        const content = current.textContent.trim()
         if(!content) return
         const { dataset } = owner
         if(!dataset) return
@@ -55,11 +71,10 @@
     }
 </script>
 
-<form method="post" on:submit={submit}>
+<form method="post" on:submit={submit} class="position-relative">
     <div class="row h-100">
         <div class="col-6 d-flex flex-column align-items-center justify-content-center">
-            <div class="alert alert-light ps-5" role="alert" bind:this={current}>
-            </div>
+            <div class="alert alert-light ps-5" role="alert" bind:this={current}></div>
             <Tags url="/api/tags" bind:this={tagger}/>
             <Submit />
         </div>
