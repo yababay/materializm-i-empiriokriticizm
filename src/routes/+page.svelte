@@ -13,6 +13,12 @@
     const ID_PREFIX = 2000000
 
     onMount(() => {
+        
+        const i = +(localStorage.getItem('previous') || 1)
+        const paragraphs = Array.from(document.querySelectorAll('article p') as NodeListOf<HTMLParagraphElement>)
+        const prev = paragraphs[i]
+        if(prev) prev.scrollIntoView()
+
         document.addEventListener('selectionchange', async () => {
         const selection = window.getSelection();
             if(!(selection && selection.toString().length > 0)) return
@@ -20,7 +26,7 @@
             owner = text.parentElement as HTMLParagraphElement
             const id = findParagraphId()
             if(!(current && parent && id > 0)) return
-            current.textContent = owner.textContent.replace(/\d+$/, '')
+            current.textContent = owner.textContent.replace(/\d+\ \(\d+\%\)$/, '')
             tagger.reset()
             const tags = (await fetch(`/api/tags/${id}`).then(res => res.json())) as string[]
             tagger.restore(tags)
@@ -44,8 +50,15 @@
             paragraph.classList.add('current')
             const badge = document.createElement('span')
             badge.classList.add('badge')
-            badge.textContent = `${count}`
+            // ============
+            const article = document.querySelector('article');
+            if(!article) throw 'no percentage'
+            const percentage = Math.round(article.scrollTop / article.scrollHeight * 100)
+            //console.log(`The element has been scrolled ${elementScrolledAmount} pixels. Height = ${}`);
+
+            badge.textContent = `${count} (${percentage}%)`
             paragraph.appendChild(badge)
+            localStorage.setItem('previous', count + '')
             return count + ID_PREFIX
         }
         return -1
