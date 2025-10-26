@@ -10,10 +10,9 @@
 	<link rel="icon" href={favicon} />
 </svelte:head>
 
-
-<Bare title="Хулиганствующий материализм">
+<Bare title="Работа с тэгами">
 	<section class="w-100 h-100 position-relative">
-		<a href="/tagger" title="Работа с тэгами" class="position-absolute" id="nav"><span class="bi bi-pencil"></span></a>
+			<a href="/" title="На главную" class="position-absolute" id="nav"><span class="bi bi-house"></span></a>
 		<div class="row w-100">
 			<div class="col-4">
 				<Toc />
@@ -22,14 +21,3 @@
 		</div>
 	</section>
 </Bare>
-
-<style lang="scss">
-	section {
-		min-height: 100vh;
-
-		#nav {
-			top: 1rem;
-			right: 3rem;
-		}
-	}
-</style>
